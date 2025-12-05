@@ -36,16 +36,18 @@ Secure Password Manager CLI is a command-line tool for safely storing and managi
 
 ## Installation
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/secure-password-manager.git
-cd secure-password-manager
+## Installation
 
-# Create virtual environment (optional but recommended)
+### 1. Clone the repository
+git clone https://github.com/Lim-Huycheng/Cryptography-Y3-T1-Password_Manger.git
+cd Cryptography-Y3-T1-Password_Manger
+
+### 2. Create a virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate     # Windows: venv\Scripts\activate
 
-# Install dependencies
-pip install pycryptodome argon2-cffi
+### 3. Install required dependencies
+pip install -r requirements.txt
 ``` 
 ## Usage
 ```bash
@@ -53,14 +55,50 @@ python app.py
 ```
 
 ### Main Menu Options
-- Vault Locked
-  - Create new vault
-  - Load existing vault
-  - Exit
-- Vault Unlocked
-  - Store credentials
-  - Retrieve credentials
-  - Delete credentials
-  - List domains
-  - Save and lock vault
-  - Exit
+```bash 
+==== Secure Password Manager ====
+1. Create new vault
+2. Load existing vault
+3. Exit
+```
+#### Create a New Vault
+```bash 
+Enter vault filename: myvault.bin
+Create master password: ********
+Confirm master password: ********
+Vault created successfully!
+```
+#### Main Menu (Vault Unlocked)
+```bash
+==================================================  
+                PASSWORD MANAGER
+================================================== 
+Vault Status: UNLOCKED (0 domains)
+1. Store credentials
+2. Retrieve credentials
+3. Delete credentials
+4. List domains
+5. Save and lock vault
+6. Exit
+```
+##### Example
+```bash
+Enter domain: CADT.com
+Enter gmail: Jennie16@gmail.com
+Enter password: ********
+Credentials for Cadt.com stored.
+```
+#### Delete credentials
+```bash
+Enter domain: CADT.com
+CADT.com deleted.
+```
+#### List domains
+```bash
+Stored domains (1):
+- CADT.com
+- Github.com
+- Youtube.com
+```
+
+
