@@ -1,4 +1,3 @@
-#OFFICIAL 
 from getpass import getpass
 from keychain import SecureKeychain
 
