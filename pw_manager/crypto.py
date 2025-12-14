@@ -1,5 +1,3 @@
-import hashlib
-import hmac
 import secrets
 import base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -8,7 +6,7 @@ from argon2.low_level import hash_secret_raw, Type
 class CryptoUtils:
     SALT_LENGTH = 16
     NONCE_LENGTH = 12
-    KEY_LENGTH = 32
+    KEY_LENGTH = 32  # 256-bit AES key
 
     @staticmethod
     def generate_salt() -> bytes:
@@ -16,38 +14,19 @@ class CryptoUtils:
 
     @staticmethod
     def argon2id_kdf(password: str, salt: bytes) -> bytes:
+        """
+        Derive a strong key from a password using Argon2id.
+        Adjusted for better security.
+        """
         return hash_secret_raw(
             password.encode(),
             salt,
-            time_cost=2,
-            memory_cost=19,
+            time_cost=3,       # increase for slightly more CPU hardness
+            memory_cost=65536, # 64 MiB memory cost
             parallelism=1,
             hash_len=CryptoUtils.KEY_LENGTH,
             type=Type.ID
         )
-
-    @staticmethod
-    def separate_keys(master_key: bytes, fixed_salt: bytes = None) -> tuple:
-        if fixed_salt is None:
-            enc_salt = secrets.token_bytes(CryptoUtils.SALT_LENGTH)
-            hmac_salt = secrets.token_bytes(CryptoUtils.SALT_LENGTH)
-        else:
-            enc_salt = hashlib.sha256(fixed_salt + b"enc").digest()[:CryptoUtils.SALT_LENGTH]
-            hmac_salt = hashlib.sha256(fixed_salt + b"hmac").digest()[:CryptoUtils.SALT_LENGTH]
-
-        enc_key = CryptoUtils.argon2id_kdf(
-            master_key.hex() + ":encryption",
-            enc_salt
-        )
-        hmac_key = CryptoUtils.argon2id_kdf(
-            master_key.hex() + ":hmac",
-            hmac_salt
-        )
-        return enc_key, hmac_key
-
-    @staticmethod
-    def generate_hmac(key: bytes, data: bytes) -> bytes:
-        return hmac.new(key, data, hashlib.sha256).digest()
 
     @staticmethod
     def encrypt_aes256gcm(key: bytes, plaintext: str) -> dict:

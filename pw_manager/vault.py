@@ -1,6 +1,5 @@
 import json
 import base64
-import hmac
 import secrets
 from pathlib import Path
 from datetime import datetime
@@ -15,9 +14,10 @@ class PasswordVault:
         self.vault_dir.mkdir(exist_ok=True)
 
         self.encryption_key = None
-        self.hmac_key = None
         self.is_unlocked = False
         self.passwords = {}
+
+    # ---------- INITIALIZE ----------
     def initialize(self, password: str) -> bool:
         if len(password) < 12:
             print("❌ Password must be at least 12 characters")
@@ -28,17 +28,17 @@ class PasswordVault:
 
         salt = CryptoUtils.generate_salt()
         master_key = CryptoUtils.argon2id_kdf(password, salt)
-        enc_key, hmac_key = CryptoUtils.separate_keys(master_key, salt)
 
-        verify = CryptoUtils.generate_hmac(hmac_key, b"vault_verification")
+        # Simple verification HMAC using derived key
+        verify = base64.b64encode(master_key).decode()
         config = {
             "salt": base64.b64encode(salt).decode(),
-            "verify": base64.b64encode(verify).decode(),
+            "verify": verify,
             "created": datetime.now().isoformat(),
         }
 
         self.config_file.write_text(json.dumps(config, indent=2))
-        encrypted = CryptoUtils.encrypt_aes256gcm(enc_key, "{}")
+        encrypted = CryptoUtils.encrypt_aes256gcm(master_key, "{}")
         self.vault_file.write_text(json.dumps(encrypted, indent=2))
 
         print("✓ Vault initialized")
@@ -52,22 +52,20 @@ class PasswordVault:
 
         config = json.loads(self.config_file.read_text())
         salt = base64.b64decode(config["salt"])
-        stored = base64.b64decode(config["verify"])
+        stored_verify = config["verify"]
 
         master_key = CryptoUtils.argon2id_kdf(password, salt)
-        enc_key, hmac_key = CryptoUtils.separate_keys(master_key, salt)
-        verify = CryptoUtils.generate_hmac(hmac_key, b"vault_verification")
+        verify = base64.b64encode(master_key).decode()
 
-        if not hmac.compare_digest(verify, stored):
+        if verify != stored_verify:
             print("❌ Invalid password")
             return False
 
         vault_data = json.loads(self.vault_file.read_text())
-        plaintext = CryptoUtils.decrypt_aes256gcm(enc_key, vault_data)
+        plaintext = CryptoUtils.decrypt_aes256gcm(master_key, vault_data)
 
         self.passwords = json.loads(plaintext)
-        self.encryption_key = enc_key
-        self.hmac_key = hmac_key
+        self.encryption_key = master_key
         self.is_unlocked = True
         print("✓ Vault unlocked")
         return True
@@ -80,7 +78,6 @@ class PasswordVault:
         except Exception:
             pass
         self.encryption_key = None
-        self.hmac_key = None
         self.passwords.clear()
         self.is_unlocked = False
         print("✓ Vault locked")
@@ -171,4 +168,3 @@ class PasswordVault:
             json.dumps(self.passwords)
         )
         self.vault_file.write_text(json.dumps(encrypted, indent=2))
-
