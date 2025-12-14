@@ -1,7 +1,7 @@
-from .crypto import CryptoEngine
-from .vault import SecureVault
+from .crypto import CryptoUtils
+from .vault import PasswordVault
 
 __all__ = [
-    "CryptoEngine",
-    "SecureVault",
+    "CryptoUtils",
+    "PasswordVault",
 ]

@@ -1,24 +1,26 @@
 from getpass import getpass
-from .vault import SecureVault
+from .vault import PasswordVault
+
 def show_help():
     print("""
 Commands:
-  init <password>    Initialize vault
-  unlock <password>  Unlock vault
-  lock               Lock vault
-  add                Add password
-  list               List passwords
-  get <service>      Get password
-  delete <service>   Delete password
-  exit               Exit
-  help               Show this help
-    """)
+  init             Initialize vault
+  unlock           Unlock vault
+  lock             Lock vault
+  add              Add entry
+  update           Update entry
+  list             List entries
+  get <service>    Copy password to clipboard
+  delete <service> Delete entry
+  help             Show help
+  exit             Quit
+""")
+
 def run():
-    vault = SecureVault()
+    vault = PasswordVault()
 
     print("\n" + "=" * 80)
-    print("🔐 SecureVault - Offline Password Manager")
-    print("   Argon2id | HMAC-SHA256 | AES-256-GCM")
+    print("🔐 Password Manager")
     print("=" * 80 + "\n")
 
     show_help()
@@ -26,8 +28,7 @@ def run():
     while True:
         try:
             prompt = "🔓" if vault.is_unlocked else "🔒"
-            user_input = input(f"{prompt} > ").strip()
-
+            user_input = input(f"{prompt}> ").strip()
             if not user_input:
                 continue
 
@@ -36,12 +37,10 @@ def run():
             arg = parts[1] if len(parts) > 1 else None
 
             if command == "init":
-                password = arg or getpass("Master password: ")
-                vault.initialize(password)
+                vault.initialize(getpass("Master password: "))
 
             elif command == "unlock":
-                password = arg or getpass("Master password: ")
-                vault.unlock(password)
+                vault.unlock(getpass("Master password: "))
 
             elif command == "lock":
                 vault.lock()
@@ -50,11 +49,18 @@ def run():
                 if not vault.is_unlocked:
                     print("❌ Unlock vault first")
                     continue
+                vault.add(
+                    input("Service: "),
+                    input("Username: "),
+                    getpass("Password: ")
+                )
 
-                service = input("Service: ")
-                username = input("Username: ")
-                password = getpass("Password: ")
-                vault.add(service, username, password)
+            elif command == "update":
+                vault.update(
+                    input("Service: "),
+                    input("New username (blank = keep): ") or None,
+                    getpass("New password (blank = keep): ") or None
+                )
 
             elif command == "list":
                 vault.list()
@@ -71,15 +77,15 @@ def run():
                 else:
                     print("❌ Usage: delete <service>")
 
+            elif command == "help":
+                show_help()
+
             elif command in ("exit", "quit", "q"):
                 print("Goodbye! 👋")
                 break
 
-            elif command == "help":
-                show_help()
-
             else:
-                print(f"❌ Unknown command: {command}")
+                print("❌ Unknown command")
 
         except KeyboardInterrupt:
             print("\n\nGoodbye! 👋")
