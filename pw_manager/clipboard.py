@@ -6,9 +6,9 @@ class ClipboardManager:
     @staticmethod
     def copy_and_clear(secret: str, timeout: int = 15):
         pyperclip.copy(secret)
-        print(f"📋 Password copied to clipboard (clears in {timeout}s)")
+        print(f"📋 Password copied (clears in {timeout}s)")
 
-        def clear_clipboard():
+        def clear():
             time.sleep(timeout)
             try:
                 if pyperclip.paste() == secret:
@@ -17,4 +17,4 @@ class ClipboardManager:
             except Exception:
                 pass
 
-        threading.Thread(target=clear_clipboard, daemon=True).start()
+        threading.Thread(target=clear, daemon=True).start()
