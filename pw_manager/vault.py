@@ -8,7 +8,7 @@ from .crypto import CryptoUtils
 from .clipboard import ClipboardManager
 
 class PasswordVault:
-    def __init__(self, vault_dir: str = "vault"):
+    def __init__(self, vault_dir: str = "save"):
         self.vault_dir = Path(vault_dir)
         self.vault_file = self.vault_dir / "vault.json"
         self.config_file = self.vault_dir / "config.json"
