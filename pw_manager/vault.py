@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import datetime
 from .crypto import CryptoUtils
 from .clipboard import ClipboardManager
+import string
 
 class PasswordVault:
     def __init__(self, vault_dir="save"):
@@ -18,9 +19,14 @@ class PasswordVault:
         self.is_unlocked = False
 
     # ---------- INIT ----------
+    def generate_password(self, length=16) -> str: 
+        """Generate a random secure password.""" 
+        chars = string.ascii_letters + string.digits + string.punctuation 
+        return ''.join(secrets.choice(chars) for _ in range(length))
+
     def initialize(self, password: str):
         if self.config_file.exists():
-            print("❌ Vault already exists")
+            print("Vault already exists")
             return
 
         salt = CryptoUtils.generate_salt()
@@ -45,7 +51,7 @@ class PasswordVault:
     # ---------- UNLOCK ----------
     def unlock(self, password: str):
         if not self.config_file.exists():
-            print("❌ Vault not initialized")
+            print("Vault not initialized")
             return
 
         cfg = json.loads(self.config_file.read_text())
@@ -60,7 +66,7 @@ class PasswordVault:
             verify,
             base64.b64decode(cfg["verify"])
         ):
-            print("❌ Invalid password")
+            print(" Invalid password")
             return
 
         data = json.loads(self.vault_file.read_text())
@@ -85,9 +91,27 @@ class PasswordVault:
     # ---------- CRUD ----------
     def add(self, service, username, password):
         if not self.is_unlocked:
-            print("❌ Vault locked")
+            print("Vault locked")
             return
 
+        service = service.strip()
+        username = username.strip()
+
+        if not service:
+            print("Service cannot be empty")
+            return
+
+        if not username:
+            print("Username cannot be empty")
+            return
+
+        if not password or not password.strip():
+            print("Password cannot be empty")
+            return
+        for entry in self.passwords.values():
+            if entry["service"].lower() == service.lower():
+                print(f"🚫 Service '{service}' already exists")
+                return
         eid = secrets.token_hex(16)
         self.passwords[eid] = {
             "service": service,
@@ -95,12 +119,13 @@ class PasswordVault:
             "password": password,
             "created": datetime.now().isoformat()
         }
+
         self._save()
         print("✓ Added")
 
     def list(self):
         if not self.is_unlocked:
-            print("❌ Vault locked")
+            print("Vault locked")
             return
 
         if not self.passwords:
@@ -116,46 +141,47 @@ class PasswordVault:
 
     def get(self, service):
         if not self.is_unlocked:
-            print("❌ Vault locked")
+            print("Vault locked")
             return
 
         matches = [e for e in self.passwords.values()
                    if service.lower() in e["service"].lower()]
         if len(matches) != 1:
-            print("❌ Not found or ambiguous")
+            print("Not found or ambiguous")
             return
 
         e = matches[0]
         ClipboardManager.copy_and_clear(e["password"])
-
     def update(self, service, username=None, password=None):
         if not self.is_unlocked:
-            print("❌ Vault locked")
+            print("Vault locked")
             return
 
         matches = [
             (k, v) for k, v in self.passwords.items()
-            if service.lower() in v["service"].lower()
+            if v["service"].lower() == service.lower()
         ]
 
         if len(matches) != 1:
-            print("❌ Not found or ambiguous")
+            print("Not found or ambiguous")
             return
-
-        key, entry = matches[0]
-
+        eid, entry = matches[0]
         if username is not None:
-            entry["username"] = username
-        if password is not None:
-            entry["password"] = password
+            entry["username"] = username.strip()
 
+        if password is not None:
+            if not password.strip():
+                print("Password cannot be empty")
+                return
+            entry["password"] = password
         entry["modified"] = datetime.now().isoformat()
+
+        self.passwords[eid] = entry  # explicit, clear
         self._save()
         print("✓ Updated")
-
     def delete(self, service):
         if not self.is_unlocked:
-            print("❌ Vault locked")
+            print("Vault locked")
             return
 
         for k, v in list(self.passwords.items()):
@@ -164,4 +190,4 @@ class PasswordVault:
                 self._save()
                 print("✓ Deleted")
                 return
-        print("❌ Not found")
+        print("Not found")
