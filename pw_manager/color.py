@@ -9,7 +9,7 @@ class UI:
 
     @staticmethod
     def err(msg):
-        print(Fore.RED + "❌ " + msg)
+        print(Fore.RED  + msg)
 
     @staticmethod
     def warn(msg):

@@ -4,7 +4,7 @@ import time
 
 class ClipboardManager:
     @staticmethod
-    def copy_and_clear(secret: str, timeout: int = 15):
+    def copy_and_clear(secret: str, timeout: int = 10):
         pyperclip.copy(secret)
         print(f"📋 Password copied (clears in {timeout}s)")
 
