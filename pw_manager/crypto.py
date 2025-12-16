@@ -6,23 +6,17 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from argon2.low_level import hash_secret_raw, Type
 
 class CryptoUtils:
-    SALT_LEN = 16                  # Salt length in bytes
-    AES256_KEY_LEN = 32             # AES-256 key length in bytes
-    AESGCM_NONCE_LEN = 12           # AES-GCM nonce length in bytes
-    AAD = b"vault:v1"               # Associated data for AES-GCM
-
+    SALT_LEN = 16                  
+    AES256_KEY_LEN = 32            
+    AESGCM_NONCE_LEN = 12          
+    AAD = b"vault:v1"              
     @staticmethod
     def generate_salt() -> bytes:
-        """Generate a random salt."""
         return secrets.token_bytes(CryptoUtils.SALT_LEN)
-
     @staticmethod
     def argon2id_kdf(password: str, salt: bytes) -> bytes:
-        """
-        Derive a fixed-length key from the master password using Argon2id.
-        """
         return hash_secret_raw(
-            secret=password.encode(),   # Must use 'secret', not 'password'
+            secret=password.encode(),  
             salt=salt,
             time_cost=3,
             memory_cost=65536,
@@ -30,15 +24,11 @@ class CryptoUtils:
             hash_len=CryptoUtils.AES256_KEY_LEN,
             type=Type.ID
         )
-
     @staticmethod
     def hmac_derive(root_key: bytes, context: bytes) -> bytes:
-        """Derive a key using HMAC-SHA256 from a root key and context."""
         return hmac.new(root_key, context, hashlib.sha256).digest()
-
     @staticmethod
     def encrypt(key: bytes, plaintext: str) -> dict:
-        """Encrypt plaintext using AES-256-GCM."""
         if len(key) != CryptoUtils.AES256_KEY_LEN:
             raise ValueError("Key must be 32 bytes (AES-256-GCM)")
         aes = AESGCM(key)
@@ -52,10 +42,8 @@ class CryptoUtils:
             "nonce": base64.b64encode(nonce).decode(),
             "ciphertext": base64.b64encode(ciphertext).decode()
         }
-
     @staticmethod
     def decrypt(key: bytes, data: dict) -> str:
-        """Decrypt AES-256-GCM encrypted data."""
         if len(key) != CryptoUtils.AES256_KEY_LEN:
             raise ValueError("Key must be 32 bytes (AES-256-GCM)")
         aes = AESGCM(key)

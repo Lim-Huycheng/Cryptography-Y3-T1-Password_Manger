@@ -45,8 +45,7 @@ class PasswordVault:
         self.config_file.write_text(json.dumps({
             "salt": base64.b64encode(salt).decode(),
             "verify": base64.b64encode(verify_token).decode(),
-            "created": datetime.now().isoformat(),
-            "version": 1
+            "created": datetime.now().isoformat()
         }, indent=2))
 
         self.vault_file.write_text(json.dumps(
