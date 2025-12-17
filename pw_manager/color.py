@@ -21,8 +21,8 @@ class UI:
 
     @staticmethod
     def prompt_locked():
-        return Fore.RED + "🔒> " + Style.RESET_ALL
+        return Fore.RED + "> " + Style.RESET_ALL
 
     @staticmethod
     def prompt_unlocked():
-        return Fore.GREEN + "🔓> " + Style.RESET_ALL
+        return Fore.GREEN + "> " + Style.RESET_ALL

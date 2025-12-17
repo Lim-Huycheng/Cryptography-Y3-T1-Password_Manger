@@ -30,7 +30,7 @@ class CryptoUtils:
     @staticmethod
     def encrypt(key: bytes, plaintext: str) -> dict:
         if len(key) != CryptoUtils.AES256_KEY_LEN:
-            raise ValueError("Key must be 32 bytes (AES-256-GCM)")
+            raise ValueError("Key must be 32 bytes")
         aes = AESGCM(key)
         nonce = secrets.token_bytes(CryptoUtils.AESGCM_NONCE_LEN)
         ciphertext = aes.encrypt(
@@ -45,7 +45,7 @@ class CryptoUtils:
     @staticmethod
     def decrypt(key: bytes, data: dict) -> str:
         if len(key) != CryptoUtils.AES256_KEY_LEN:
-            raise ValueError("Key must be 32 bytes (AES-256-GCM)")
+            raise ValueError("Key must be 32 bytes")
         aes = AESGCM(key)
         nonce = base64.b64decode(data["nonce"])
         ciphertext = base64.b64decode(data["ciphertext"])
@@ -55,3 +55,14 @@ class CryptoUtils:
             associated_data=CryptoUtils.AAD
         )
         return plaintext.decode()
+
+
+
+
+
+
+
+
+
+
+

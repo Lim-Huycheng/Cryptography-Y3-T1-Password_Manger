@@ -45,14 +45,14 @@ class PasswordVault:
         self.config_file.write_text(json.dumps({
             "salt": base64.b64encode(salt).decode(),
             "verify": base64.b64encode(verify_token).decode(),
-            "created": datetime.now().isoformat()
+            "created": datetime.now().isoformat(),
+            "version" : 1
         }, indent=2))
 
         self.vault_file.write_text(json.dumps(
             CryptoUtils.encrypt(vault_key, "{}"),
             indent=2
         ))
-
         print("✓ Vault initialized")
     def unlock(self, master_password: str) -> None:
         if not self.config_file.exists():
@@ -112,7 +112,7 @@ class PasswordVault:
             print("Service, username, and password are required")
             return
         if self._find_exact(service):
-            print(f"🚫 Service '{service}' already exists")
+            print(f"Service '{service}' already exists")
             return
         entry_id = secrets.token_hex(16)
         self._entries[entry_id] = {
@@ -182,8 +182,6 @@ class PasswordVault:
         del self._entries[eid]
         self._save()
         print("✓ Deleted")
-
-
 
 
 

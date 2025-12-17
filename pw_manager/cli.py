@@ -21,8 +21,8 @@ Commands:
 def generate_master_key():
     key = secrets.token_urlsafe(32)
     ClipboardManager.copy_and_clear(key, timeout=30)
-    UI.info("🔐 GENERATED MASTER KEY (copied to clipboard)")
-    UI.warn("⚠️  SAVE THIS KEY NOW — IT CANNOT BE RECOVERED\n")
+    UI.info("GENERATED MASTER KEY (copied to clipboard)")
+    UI.warn("SAVE THIS KEY NOW — IT CANNOT BE RECOVERED\n")
     return key
 
 def prompt_master_key(init: bool = False) -> str:
@@ -114,7 +114,7 @@ def run():
         elif cmd in ("exit", "quit"):
             if vault.is_unlocked:
                 vault.lock()
-            UI.info("Goodbye 👋")
+            UI.info("Goodbye...")
             break
         else:
             UI.err("Unknown command (type 'help')")
