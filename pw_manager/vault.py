@@ -8,7 +8,6 @@ from datetime import datetime
 from .crypto import CryptoUtils
 from .clipboard import ClipboardManager
 from .color import UI
-from colorama import Fore, Style
 class PasswordVault:
     VAULT_FILENAME = "vault.json"
     CONFIG_FILENAME = "config.json"
