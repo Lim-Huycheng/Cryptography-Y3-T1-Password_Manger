@@ -2,7 +2,6 @@ from getpass import getpass
 from .vault import PasswordVault
 from .clipboard import ClipboardManager
 from .color import UI
-import secrets
 
 def show_help():
     UI.info("""
@@ -18,45 +17,38 @@ Commands:
   help             Show help
   exit             Quit
 """)
-def generate_master_key():
-    key = secrets.token_urlsafe(32)
-    ClipboardManager.copy_and_clear(key, timeout=30)
-    UI.info("GENERATED MASTER KEY (copied to clipboard)")
-    UI.warn("SAVE THIS KEY NOW — IT CANNOT BE RECOVERED\n")
-    return key
-
-def prompt_master_key(init: bool = False) -> str:
+def prompt_master_credentials(init: bool = False):
+    email = input("Email: ").strip().lower()
+    if not email:
+        UI.err("Email cannot be empty")
+        return prompt_master_credentials(init)
     if init:
-        UI.warn("Generate master key automatically? (y/N): ")
-        choice = input().strip().lower() 
-        if choice == "y":
-            return generate_master_key()
-
+        UI.warn("⚠ IMPORTANT: Choose a strong master password. "
+                "It should be long, unique, and hard to guess, because it protects your entire vault!")
     while True:
-        pwd = getpass("Master password: ")
-        if pwd.strip():
-            return pwd
+        password = getpass("Master password: ").strip()
+        if password:
+            return email, password
         UI.err("Master password cannot be empty")
-
 def run():
     vault = PasswordVault()
     show_help()
     while True:
-        cmd = input( 
+        cmd = input(
             UI.prompt_unlocked() if vault.is_unlocked else UI.prompt_locked()
         ).strip()
         if cmd == "init":
             if vault.config_file.exists():
                 UI.err("Vault already exists")
                 continue
-            master = prompt_master_key(init=True)
-            vault.initialize(master)
+            email, master = prompt_master_credentials(init=True)
+            vault.initialize(master, email)
         elif cmd == "unlock":
             if not vault.config_file.exists():
                 UI.err("Vault not initialized")
                 continue
-            master = prompt_master_key()
-            vault.unlock(master)
+            email, master = prompt_master_credentials()
+            vault.unlock(master, email)
         elif cmd == "lock":
             if vault.is_unlocked:
                 vault.lock()
@@ -68,16 +60,10 @@ def run():
                 UI.err("Vault locked")
                 continue
             service = input("Service: ").strip()
-            if not service:
-                UI.err("Service cannot be empty")
-                continue
             username = input("Username: ").strip()
-            if not username:
-                UI.err("Username cannot be empty")
-                continue
             password = getpass("Password: ").strip()
-            if not password:
-                UI.err("Password cannot be empty")
+            if not service or not username or not password:
+                UI.err("Service, username, and password are required")
                 continue
             vault.add(service, username, password)
         elif cmd == "update":
@@ -99,7 +85,6 @@ def run():
                 UI.err("Please specify a service")
                 continue
             vault.get(service)
-            UI.ok(f"Password for '{service}' copied to clipboard")
         elif cmd.startswith("delete "):
             if not vault.is_unlocked:
                 UI.err("Vault locked")
@@ -118,22 +103,3 @@ def run():
             break
         else:
             UI.err("Unknown command (type 'help')")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
