@@ -175,3 +175,6 @@ class PasswordVault:
         del self._entries[eid]
         self._save()
         UI.ok("Deleted")
+
+
+

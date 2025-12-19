@@ -13,10 +13,6 @@ class CryptoUtils:
     AAD = b"vault:v1"
     
     @staticmethod
-    def generate_salt() -> bytes:
-        return secrets.token_bytes(CryptoUtils.SALT_LEN)
-    
-    @staticmethod
     def argon2id_kdf(password: str, salt: bytes, time_cost: int = 3, memory_cost: int = 65536) -> bytes:
         return hash_secret_raw(
             secret=password.encode(),

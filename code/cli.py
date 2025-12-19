@@ -1,4 +1,3 @@
-from getpass import getpass
 from .vault import PasswordVault
 from .masked_input import masked_input
 from .color import UI
