@@ -1,7 +1,7 @@
 # Virtual environment
 venv/
 
-# User data and configuration (CRITICAL)
+# User data and configuration 
 save/
 config.json
 vault.json

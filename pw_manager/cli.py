@@ -1,6 +1,6 @@
 from getpass import getpass
 from .vault import PasswordVault
-from .clipboard import ClipboardManager
+from .masked_input import masked_input
 from .color import UI
 
 def show_help():
@@ -26,7 +26,7 @@ def prompt_master_credentials(init: bool = False):
         UI.warn("⚠ IMPORTANT: Choose a strong master password. "
                 "It should be long, unique, and hard to guess, because it protects your entire vault!")
     while True:
-        password = getpass("Master password: ").strip()
+        password = masked_input("Master password: ").strip()
         if password:
             return email, password
         UI.err("Master password cannot be empty")
@@ -61,7 +61,7 @@ def run():
                 continue
             service = input("Service: ").strip()
             username = input("Username: ").strip()
-            password = getpass("Password: ").strip()
+            password = masked_input("Password: ").strip()
             if not service or not username or not password:
                 UI.err("Service, username, and password are required")
                 continue
@@ -72,7 +72,7 @@ def run():
                 continue
             service = input("Service: ").strip()
             new_username = input("New username (blank = keep): ").strip() or None
-            new_password = getpass("New password (blank = keep): ").strip() or None
+            new_password = masked_input("New password (blank = keep): ").strip() or None
             vault.update(service, username=new_username, password=new_password)
         elif cmd == "list":
             vault.list()
