@@ -37,7 +37,6 @@ def prompt_master_password(init: bool = False):
 def run():
     vault = PasswordVault()
     show_help()
-
     while True:
         try:
             prompt = UI.prompt_unlocked() if vault.is_unlocked else UI.prompt_locked()
@@ -63,7 +62,7 @@ def run():
             elif cmd == "lock":
                 if vault.is_unlocked:
                     vault.lock()
-                    UI.ok("✓ Vault locked")
+                    UI.ok("Vault locked")
                 else:
                     UI.err("Vault is already locked")
             # ==================== Entry Operations ==================== #
