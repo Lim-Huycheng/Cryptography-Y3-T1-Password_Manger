@@ -13,14 +13,23 @@ It uses **Argon2id** for password-based key derivation, **AES-256-GCM** for encr
 ---
 
 ## **Features**
-
-- Store passwords locally in an encrypted vault (`vault.json`).
-- Master password authentication with **key separation**.
-- AES-256-GCM encryption for vault entries.
-- HMAC-based verification ensures integrity without storing the master password.
-- Clipboard support with auto-clear after 15 seconds.
+- 🔐 Strong encryption
+   - Argon2id for master password key derieved
+   - HKDF key stretching
+   - AES-256-GCM authenticated encryption
+   - Additional HMAC for integrity verification
 - CRUD operations: **add, update, delete, list, get**.
-- Offline and fully self-contained.
+- 📦 Fully offline
+   - No network access
+   - No cloud dependencies
+- 🧠 Single master password 
+   - Protects the entire vault
+- 📋 Secure clipboard handling
+   - Passwords copied temporarily
+   - Clipboard auto-clears after a timeout
+- 🗂️ Local file storage
+   - Encrypted vault stored as JSON
+   - Separate configuration file for authentication metadata
 
 ## **How It Works**
 
@@ -42,11 +51,13 @@ Master Password
 ```
 ---
 
-## Installation
+## Installation 
+- Python 3.10+
+--- 
+
 1. Clone the repository:
 ```bash
 git clone <repo-url>
-cd password_manager
 ```
 2. Create a virtual environment
 ```bash
@@ -62,11 +73,11 @@ pip install -r requirements.txt
 ## Usage
 Run the password manager:
 ```bash
-python -m pasword_manager
+python -m pw_manager
 ```
-Commands
+Commmands
 ```bash
- init             Initialize vault
+init             Initialize vault
 unlock           Unlock vault
 lock             Lock vault
 add              Add entry
@@ -79,25 +90,28 @@ exit             Quit
 ```
 Examples:
 ```bash
-🔒> init
-Master password: ************
-✓ Vault initialized
+> init
+Email: user@example.com
+Master password: ********
 
-🔒> unlock
-Master password: ************
-✓ Vault unlocked
+> unlock
+Email: user@example.com
+Master password: ********
 
-🔓> add
+> add
 Service: github
-Username: johndoe
-Password: ************
-✓ Added
+Username: myuser
+Password: ********
 
-🔓> list
-+----------------------+----------------------+
-| Service              | Username             |
-+----------------------+----------------------+
-| github               | johndoe              |
-+----------------------+----------------------+
+> list
+Service              | Username
+--------------------+--------------------
+github               | myuser
+
+> get github
+(Password copied to clipboard, clears in 10s)
+
+> lock
+Vault locked
 
 ```

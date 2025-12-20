@@ -7,18 +7,29 @@ def show_help():
 ║              Password Vault Commands                   ║
 ╚════════════════════════════════════════════════════════╝
 
+VAULT MANAGEMENT:
   init               Initialize a new vault
   unlock             Unlock vault with master password
   lock               Lock vault
-  add                Add new entry
+
+ENTRY OPERATIONS:
+  add                Add new password entry
   update             Update existing entry
   list               List all entries
   get <service>      Copy password to clipboard
   delete <service>   Delete entry
+
+SECURITY & MONITORING:
+  audit-log          Show last 20 audit log entries
+  audit-log <N>      Show last N audit log entries
+  audit-stats        Display audit log statistics
+  
+UTILITIES:
   help               Show this help message
   exit, quit         Exit the application
 """)
 def prompt_master_password(init: bool = False):
+    """Prompt user for master password with optional confirmation"""
     if init:
         UI.warn("⚠ IMPORTANT: Choose a strong master password!")
         UI.warn("  • Use at least 12 characters")
@@ -35,12 +46,14 @@ def prompt_master_password(init: bool = False):
             return password
         UI.err("Password cannot be empty")
 def run():
+    """Main CLI loop for password vault"""
     vault = PasswordVault()
     show_help()
     while True:
         try:
             prompt = UI.prompt_unlocked() if vault.is_unlocked else UI.prompt_locked()
             cmd = input(prompt).strip()
+            
             if not cmd:
                 continue
             # ==================== Init/Unlock/Lock ==================== #
@@ -50,6 +63,7 @@ def run():
                     continue
                 master = prompt_master_password(init=True)
                 vault.initialize(master)
+            
             elif cmd == "unlock":
                 if not vault.config_file.exists():
                     UI.err("Vault not initialized. Use 'init' first")
@@ -59,12 +73,14 @@ def run():
                     continue
                 master = prompt_master_password()
                 vault.unlock(master)
+            
             elif cmd == "lock":
                 if vault.is_unlocked:
                     vault.lock()
                     UI.ok("Vault locked")
                 else:
                     UI.err("Vault is already locked")
+            
             # ==================== Entry Operations ==================== #
             elif cmd == "add":
                 if not vault.is_unlocked:
@@ -74,6 +90,7 @@ def run():
                 username = input("Username: ").strip()
                 password = masked_input("Password: ").strip()
                 vault.add(service, username, password)
+            
             elif cmd == "update":
                 if not vault.is_unlocked:
                     UI.err("Vault locked")
@@ -90,7 +107,6 @@ def run():
                 vault.update(service, username=new_username, password=new_password)
             elif cmd == "list":
                 vault.list()
-
             elif cmd.startswith("get "):
                 if not vault.is_unlocked:
                     UI.err("Vault locked")
@@ -108,15 +124,33 @@ def run():
                 if not service:
                     UI.err("Please specify a service")
                     continue
-                # Confirmation
-                confirm = input(f"Delete '{service}'? (y/n): ").strip().lower()
-                if confirm == "y":
-                    vault.delete(service)
-                else:
-                    UI.info("Cancelled")
+                vault.delete(service)
+            # ==================== Audit Log Commands ==================== #
+            elif cmd == "audit-log":
+                if not vault.is_unlocked:
+                    UI.err("Vault locked")
+                    continue
+                vault.audit_logger.display_logs(limit=20)
+            elif cmd.startswith("audit-log "):
+                if not vault.is_unlocked:
+                    UI.err("Vault locked")
+                    continue
+                try:
+                    limit = int(cmd.split(" ", 1)[1].strip())
+                    if limit <= 0:
+                        UI.err("Number must be positive")
+                        continue
+                    vault.audit_logger.display_logs(limit=limit)
+                except ValueError:
+                    UI.err("Please specify a valid number")
+            elif cmd == "audit-stats":
+                if not vault.is_unlocked:
+                    UI.err("Vault locked")
+                    continue
+                vault.audit_logger.display_statistics()
             # ==================== Help/Exit ==================== #
             elif cmd == "help":
-                show_help()
+                show_help() 
             elif cmd in ("exit", "quit"):
                 if vault.is_unlocked:
                     vault.lock()
@@ -126,6 +160,6 @@ def run():
                 UI.err("Unknown command. Type 'help' for available commands")
         except KeyboardInterrupt:
             print()
-            UI.warn("Use 'exit' or 'quit' to leave")
+            UI.warn("Use 'exit' or 'quit' to leave")  
         except Exception as e:
             UI.err(f"Error: {e}")

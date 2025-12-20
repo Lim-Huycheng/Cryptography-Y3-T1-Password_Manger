@@ -1,16 +1,10 @@
 import sys
 def masked_input(prompt: str = "", mask: str = "*") -> str:
-    """
-    Read password input and display '*' for each character.
-    Works on Windows and Unix.
-    """
     sys.stdout.write(prompt)
     sys.stdout.flush()
     password = []
-
     if sys.platform.startswith("win"):
         import msvcrt
-
         while True:
             ch = msvcrt.getwch()
             if ch in ("\r", "\n"):
@@ -27,14 +21,12 @@ def masked_input(prompt: str = "", mask: str = "*") -> str:
                 password.append(ch)
                 sys.stdout.write(mask)
                 sys.stdout.flush()
-
     else:
         import termios
         import tty
 
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
-
         try:
             tty.setraw(fd)
             while True:

@@ -11,7 +11,6 @@ class CryptoUtils:
     AES256_KEY_LEN = 32  
     AESGCM_NONCE_LEN = 12
     AAD = b"vault:v1"
-    
     @staticmethod
     def argon2id_kdf(password: str, salt: bytes, time_cost: int = 3, memory_cost: int = 65536) -> bytes:
         return hash_secret_raw(
