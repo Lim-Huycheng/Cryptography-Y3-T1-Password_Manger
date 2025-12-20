@@ -45,7 +45,7 @@ class CryptoUtils:
             associated_data=CryptoUtils.AAD
         )
         mac = hmac.new(key[32:], ciphertext, hashlib.sha256).digest()
-        return {
+        return {    
             "nonce": base64.b64encode(nonce).decode(),
             "ciphertext": base64.b64encode(ciphertext).decode(),
             "mac": base64.b64encode(mac).decode()
